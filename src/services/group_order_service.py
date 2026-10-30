@@ -6,6 +6,7 @@ from src.services.group_order_utils import (generate_share_code, generate_member
 from src.repository.group_order_repository import (create_group_w_host, get_group_by_code, add_group_member, add_group_item, remove_group_item)
 from src.repository.group_order_repository import get_group_summary_data
 from src.services.group_order_utils import split_delivery_fee
+from src.repository.group_order_repository import lock_group_order
 
 def create_group_order(restaurant_id: int, host_name: str):
     if not restaurant_exists(restaurant_id):
@@ -175,3 +176,26 @@ def get_group_order_summary(share_code: str):
         "grand_total_cents": food_subtotal + DELIVERY_FEE,
         "members": summary_members
     }
+
+def lock_group(share_code: str, credential: str):
+    if not credential:
+        raise HTTPException(status_code=401, detail="Member credential required")
+    credential_hash = hash_credential(credential)
+    updated_at = datetime.now(timezone.utc).isoformat()
+    try:
+        return lock_group_order(
+            share_code=share_code,
+            credential_hash=credential_hash,
+            updated_at=updated_at
+        )
+    except ValueError as error:
+        reason = str(error)
+        if reason == "GROUP_NOT_FOUND":
+            raise HTTPException(404, "Group not found")
+        if reason == "GROUP_EXPIRED":
+            raise HTTPException(410, "Group has expired")
+        if reason == "GROUP_NOT_OPEN":
+            raise HTTPException(409, "Group is not open")
+        if reason == "HOST_CREDENTIAL_REQUIRED":
+            raise HTTPException(403, "Only the host can lock the group")
+        raise

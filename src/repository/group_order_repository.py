@@ -242,6 +242,30 @@ def get_group_summary_data(share_code):
         ).fetchone()
         if group is None:
             return None
+         # Expire an OPEN group after two hours of inactivity.
+        if group["status"] == "OPEN":
+            current_time = datetime.now(timezone.utc)
+            last_activity = datetime.fromisoformat(
+                group["last_activity_at"]
+            )
+
+            if current_time >= last_activity + timedelta(hours=2):
+                connection.execute(
+                    """
+                    UPDATE group_orders
+                    SET status = 'EXPIRED'
+                    WHERE id = ? AND status = 'OPEN'
+                    """,
+                    (group["id"],)
+                )
+                connection.commit()
+
+                # Read the updated status for the summary.
+                group = connection.execute(
+                    "SELECT * FROM group_orders WHERE id = ?",
+                    (group["id"],)
+                ).fetchone()
+
         members = connection.execute(
             """
             SELECT
@@ -268,5 +292,41 @@ def get_group_summary_data(share_code):
             "members": [dict(member) for member in members]
         }
 
+    finally:
+        connection.close()
+
+def lock_group_order(share_code, credential_hash, updated_at):
+    connection = get_connection()
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        group = connection.execute("SELECT id, status, last_activity_at FROM group_orders WHERE share_code = ?", (share_code,)).fetchone()
+        if group is None:
+            raise ValueError("GROUP_NOT_FOUND")
+        if group["status"] != "OPEN":
+            raise ValueError("GROUP_NOT_OPEN")
+        current_time = datetime.fromisoformat(updated_at)
+        last_activity = datetime.fromisoformat(group["last_activity_at"])
+        if current_time >= last_activity + timedelta(hours=2):
+            connection.execute("UPDATE group_orders SET status = 'EXPIRED' WHERE id = ?", (group["id"],))
+            connection.commit()
+            raise ValueError("GROUP_EXPIRED")
+        host = connection.execute( #Only the host's credentials can lock the group.
+        "SELECT id FROM group_members WHERE group_order_id = ? AND credential_hash = ? AND is_host = 1", (group["id"], credential_hash)
+        ).fetchone()
+        if host is None:
+            raise ValueError("HOST_CREDENTIAL_REQUIRED")
+        connection.execute(
+            "UPDATE group_orders SET status = 'LOCKED', last_activity_at = ? WHERE id = ?",
+            (updated_at, group["id"])
+        )
+        connection.commit()
+        return {
+            "group_order_id": group["id"],
+            "share_code": share_code,
+            "status": "LOCKED"
+        }
+    except Exception:
+        connection.rollback()
+        raise
     finally:
         connection.close()

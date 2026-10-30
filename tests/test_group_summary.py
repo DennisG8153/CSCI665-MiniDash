@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from src.main import app
 from src.repository import database
 from src.repository.schema import create_tables
+from datetime import datetime, timedelta, timezone
 
 def test_group_summary_with_two_members(tmp_path, monkeypatch):
     test_db = tmp_path / "test.db"
@@ -110,3 +111,62 @@ def test_group_summary_with_two_members(tmp_path, monkeypatch):
         member["total_cents"]
         for member in summary["members"]
     ) == summary["grand_total_cents"]
+
+def test_summary_marks_inactive_group_expired(tmp_path, monkeypatch):
+    test_db = tmp_path / "test.db"
+    monkeypatch.setattr(database, "DB_PATH", test_db)
+    create_tables()
+    connection = database.get_connection()
+    try:
+        restaurant = connection.execute(
+            """
+            INSERT INTO restaurants
+            (name, cuisine, opens_at, closes_at, avg_prep_minutes)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("Pizza Palace", "Italian", "10:00", "22:00", 25)
+        )
+        restaurant_id = restaurant.lastrowid
+        connection.commit()
+    finally:
+        connection.close()
+    client = TestClient(app)
+    response = client.post(
+        "/group-orders",
+        json={"restaurant_id": restaurant_id, "host_name": "Stacy"}
+    )
+    assert response.status_code == 201
+    group = response.json()
+    # Simulate three hours without activity.
+    three_hours_ago = (
+        datetime.now(timezone.utc) - timedelta(hours=3)
+    ).isoformat()
+    connection = database.get_connection()
+    try:
+        connection.execute(
+            """
+            UPDATE group_orders
+            SET last_activity_at = ?
+            WHERE id = ?
+            """,
+            (three_hours_ago, group["group_order_id"])
+        )
+        connection.commit()
+    finally:
+        connection.close()
+    # Reading the summary should recognize the expiration.
+    response = client.get(
+        f"/group-orders/{group['share_code']}/summary"
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "EXPIRED"
+    # Confirm that expiration was persisted.
+    connection = database.get_connection()
+    try:
+        saved_group = connection.execute(
+            "SELECT status FROM group_orders WHERE id = ?",
+            (group["group_order_id"],)
+        ).fetchone()
+        assert saved_group["status"] == "EXPIRED"
+    finally:
+        connection.close()
