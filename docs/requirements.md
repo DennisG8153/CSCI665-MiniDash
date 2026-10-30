@@ -27,7 +27,7 @@ rounding (the parts must add up to the whole).
 13) When a member removes a valid menu item to an active and unlocked group order, the system will remove the item from the group order.
 14) Only the host should be able to lock the order and check out.
 
-### Out of Scope:
+#### Out of Scope:
 1) Both TRACK A and TRACK C are not requirements for this project.
 2) The track will not calculate any taxes as taxation is dependant on the state.
 3) The track will also not dynamically calculate delivery fees as they require geo-locations and for the restaurants to have addresses saved. These restaurants are mostly fake (even though the names were created mostly by me and actual restaurants that do exist like Nozu and Taco Bell.)
