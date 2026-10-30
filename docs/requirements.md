@@ -35,3 +35,4 @@ rounding (the parts must add up to the whole).
 2) The track will not calculate any taxes as taxation is dependant on the state.
 3) The track will also not dynamically calculate delivery fees as they require geo-locations and for the restaurants to have addresses saved. These restaurants are mostly fake (even though the names were created mostly by me and actual restaurants that do exist like Nozu and Taco Bell.)
 4) For the simplicity of this project, we are assuming that the delivery fee for all orders is $15.95 USD.
+5) For the simplicity of this project, we are assuming that the members of the group and the host all agree to order together and that the host cannot remove what other people order.
