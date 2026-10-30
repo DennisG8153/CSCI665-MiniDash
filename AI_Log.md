@@ -36,14 +36,14 @@
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 3 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 3 / October 30, ~10:20 AM |
+| Tool, Model, Mode | ChatGPT 5.5 & Medium Thinking |
+| Slice | 2 |
+| Prompt | Help me refine the current mermaid diagram I have to make the relationships make more sense. |
+| What the AI produced | The AI managed to clean up the issues that I had when it came to connecting the menu_items table and group_order_items tables together. |
+| What I verified | The connections were correct and made sense logically and are understandable in regular "human" english. |
+| What I changed and why | I edited the labeling of the keys as ChatGPT failed to do so. |
+| Outcome | The mermaid design diagram that exists in 'design.md'. |
 
 ## Entry 4 — Next AI Interaction
 
