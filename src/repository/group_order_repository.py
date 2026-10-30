@@ -330,3 +330,101 @@ def lock_group_order(share_code, credential_hash, updated_at):
         raise
     finally:
         connection.close()
+
+def checkout_group_order(share_code, credential_hash, address, checked_out_at):
+    connection = get_connection()
+    try: 
+        connection.execute("BEGIN IMMEDIATE")
+        group = connection.execute(
+            "SELECT * FROM group_orders WHERE share_code = ?",
+            (share_code,)
+        ).fetchone()
+        if group is None:
+            raise ValueError("GROUP_NOT_FOUND")
+        if group["status"] != "LOCKED":
+            raise ValueError("GROUP_NOT_LOCKED")
+        host = connection.execute( # Only the host can check out the order
+            "SELECT id FROM group_members WHERE group_order_id = ? AND credential_hash = ? AND is_host = 1", (group["id"], credential_hash)
+            ).fetchone()
+        if host is None:
+            raise ValueError("HOST_CREDENTIAL_REQUIRED")
+        items = connection.execute( # Retrieve the items and their current prices.
+            """
+            SELECT
+                goi.menu_item_id,
+                goi.quantity,
+                mi.price_cents
+            FROM group_order_items AS goi
+            JOIN menu_items AS mi
+                ON mi.id = goi.menu_item_id
+            WHERE goi.group_order_id = ?
+            """,
+            (group["id"],)
+        ).fetchall()
+        if not items:
+            raise ValueError("GROUP_EMPTY")
+        food_subtotal = sum(
+            item["quantity"] * item["price_cents"]
+            for item in items
+        )
+        delivery_fee_cents = 1595
+        total_cents = food_subtotal + delivery_fee_cents
+        # Create the normal MiniDash order.
+        cursor = connection.execute(
+            """
+            INSERT INTO orders
+            (restaurant_id, status, total_cents, address, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                group["restaurant_id"],
+                "PLACED",
+                total_cents,
+                address,
+                checked_out_at
+            )
+        )
+        normal_order_id = cursor.lastrowid
+        # Copy every group item into the normal order.
+        for item in items:
+            connection.execute(
+                """
+                INSERT INTO order_items
+                (order_id, menu_item_id, quantity)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    normal_order_id,
+                    item["menu_item_id"],
+                    item["quantity"]
+                )
+            )
+        # Mark the group as checked out.
+        connection.execute(
+            """
+            UPDATE group_orders
+            SET status = 'CHECKED_OUT',
+                normal_order_id = ?,
+                last_activity_at = ?
+            WHERE id = ?
+            """,
+            (
+                normal_order_id,
+                checked_out_at,
+                group["id"]
+            )
+        )
+        connection.commit()
+        return {
+            "group_order_id": group["id"],
+            "normal_order_id": normal_order_id,
+            "status": "CHECKED_OUT",
+            "food_subtotal_cents": food_subtotal,
+            "delivery_fee_cents": delivery_fee_cents,
+            "total_cents": total_cents
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()

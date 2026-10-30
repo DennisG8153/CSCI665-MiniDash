@@ -2,6 +2,9 @@ from fastapi import APIRouter, status, Header
 from src.models import GroupOrderCreate,GroupJoinRequest, GroupItemAdd
 from src.services.group_order_service import create_group_order, join_group_order, add_item_to_group, remove_item_from_group
 from src.services.group_order_service import get_group_order_summary, lock_group
+from src.models import GroupCheckoutRequest
+from src.services.group_order_service import checkout_group
+
 router = APIRouter()
 @router.post("/group-orders", status_code=status.HTTP_201_CREATED)
 def create_group(request: GroupOrderCreate):
@@ -46,4 +49,18 @@ def lock_group_endpoint(
     return lock_group(
         share_code=share_code,
         credential=host_credential
+    )
+
+@router.post("/group-orders/{share_code}/checkout")
+def checkout_group_endpoint(
+    share_code: str,
+    request: GroupCheckoutRequest,
+    host_credential: str = Header(
+        alias="X-Member-Credential"
+    )
+):
+    return checkout_group(
+        share_code=share_code,
+        credential=host_credential,
+        address=request.address
     )

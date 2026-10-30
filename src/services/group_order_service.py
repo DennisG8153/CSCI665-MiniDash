@@ -6,7 +6,7 @@ from src.services.group_order_utils import (generate_share_code, generate_member
 from src.repository.group_order_repository import (create_group_w_host, get_group_by_code, add_group_member, add_group_item, remove_group_item)
 from src.repository.group_order_repository import get_group_summary_data
 from src.services.group_order_utils import split_delivery_fee
-from src.repository.group_order_repository import lock_group_order
+from src.repository.group_order_repository import lock_group_order, checkout_group_order
 
 def create_group_order(restaurant_id: int, host_name: str):
     if not restaurant_exists(restaurant_id):
@@ -198,4 +198,48 @@ def lock_group(share_code: str, credential: str):
             raise HTTPException(409, "Group is not open")
         if reason == "HOST_CREDENTIAL_REQUIRED":
             raise HTTPException(403, "Only the host can lock the group")
+        raise
+
+
+def checkout_group(
+    share_code: str,
+    credential: str,
+    address: str
+):
+    if not credential:
+        raise HTTPException(401, "Host credential required")
+
+    address = address.strip()
+
+    if not address:
+        raise HTTPException(422, "Delivery address cannot be empty")
+
+    credential_hash = hash_credential(credential)
+    checked_out_at = datetime.now(timezone.utc).isoformat()
+    try:
+        return checkout_group_order(
+            share_code=share_code,
+            credential_hash=credential_hash,
+            address=address,
+            checked_out_at=checked_out_at
+        )
+    except ValueError as error:
+        reason = str(error)
+        if reason == "GROUP_NOT_FOUND":
+            raise HTTPException(404, "Group not found")
+        if reason == "GROUP_NOT_LOCKED":
+            raise HTTPException(
+                409,
+                "Group must be locked before checkout"
+            )
+        if reason == "HOST_CREDENTIAL_REQUIRED":
+            raise HTTPException(
+                403,
+                "Only the host can check out"
+            )
+        if reason == "GROUP_EMPTY":
+            raise HTTPException(
+                422,
+                "Cannot check out an empty group"
+            )
         raise

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 class OrderItemCreate(BaseModel): # Base model for ordering something.
     menu_item_id: int = Field(gt=0) # The ID of the menu item has to be greater than 0 to be a valid order.
@@ -7,7 +8,7 @@ class OrderItemCreate(BaseModel): # Base model for ordering something.
 class OrderCreate(BaseModel): 
     restaurant_id: int = Field(gt=0) # Restaurant ID > 0 for a restaurant to exist.
     items: list[OrderItemCreate] = Field(min_length =1) # There has to be at least 1 item in an order.
-    address: str = Field(min_length= 1) # Delivery address must be at least 1 character long.
+    address: str = Field(min_length= 1, max_length = 300) # Delivery address must be at least 1 character long.
 
 class GroupOrderCreate(BaseModel):
     restaurant_id: int = Field(gt=0) # Restaurant ID > 0 for a restaurant to exist.
@@ -19,3 +20,15 @@ class GroupJoinRequest(BaseModel):
 class GroupItemAdd(BaseModel): #Prevents negative IDs and quantities of 0 or less. 
     menu_item_id: int= Field(gt=0)
     quantity: int = Field(gt=0)
+
+class GroupCheckoutRequest(BaseModel): #Checkout time
+    address: str = Field(min_length=1, max_length=200) # We will also reject only whitespace addresses.
+
+class OrderStatusUpdate(BaseModel):
+    status: Literal[
+        "PLACED",
+        "PREPARING",
+        "OUT_FOR_DELIVERY",
+        "DELIVERED",
+        "CANCELLED"
+    ]
