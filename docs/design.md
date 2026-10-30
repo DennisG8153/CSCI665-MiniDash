@@ -152,3 +152,7 @@ The GROUP ORDERS feature will add three SQLite tables: group_orders, group_membe
 8. A completed group references one normal MiniDash order.
 9. A group can be checked out only once.
 10. Delivery fees are calculated using integer cents.
+## 6. Database Entity Relationship Diagram
+The diagram below illustrates how group orders, members, and their selected menu items connect to the existing MiniDash database. The diagram was created by me with refining from ChatGPT for a better understanding of the relationships and how they interact with one another.
+
+![Mermaid Diagram (Created with Refinement from ChatGPT)](./screenshots/mermaid-diagram.png)
