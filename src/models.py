@@ -12,4 +12,7 @@ class OrderCreate(BaseModel):
 class GroupOrderCreate(BaseModel):
     restaurant_id: int = Field(gt=0) # Restaurant ID > 0 for a restaurant to exist.
     host_name: str = Field(min_length=1, max_length=100) # Host name must be between 1 and 100 characters long.
+
+class GroupJoinRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
     
