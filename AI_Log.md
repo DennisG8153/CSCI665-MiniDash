@@ -76,31 +76,31 @@
 **Terminal Output from Table Creation Command:**
 ![VSCode Terminal Output SS #1](./docs/screenshots/TerminalOutput1.png) 
 
-## Entry 6 — Next AI Interaction
+## Entry 6 — Hashing Member Credentials
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 6 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 6 / October 30, 12:45 PM |
+| Tool, Model, Mode | GitHub Copilot Medium Eagerness |
+| Slice | 2 |
+| Prompt | "How would I hash member credentials securely in Python?" |
+| What the AI produced | A code snippet showing how to hash member credentials using SHA-256 in Python. |
+| What I verified | I verified the hashing function was correctly generating SHA-256 hashes. |
+| What I changed and why | The AI added an extra import `import string` that was unnecessary. |
+| Outcome | Removed the unnecessary import. |
 
-## Entry 7 — Next AI Interaction
+## Entry 7 — Test_Group_Order_Routes
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 7 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 7 / October 30, 2:00 PM |
+| Tool, Model, Mode | GitHub Copilot & Medium Eagerness In-Line |
+| Slice | 2 |
+| Prompt | Testing the `/group-orders` endpoint for creating group orders and handling invalid requests. |
+| What the AI produced | The AI produced the necessary test code for creating group orders and handling invalid requests. |
+| What I verified | Table names, column names, correctness of logic, timestamp formatting, retry-loop indentation. |
+| What I changed and why | The AI's generated test code required minor adjustments to work with the temporary databases and correctly execute and reference the materials. As this is in-line, it would attempt to auto-fill (rather aggressively) the surrounding context. |
+| Outcome | The test code now works correctly for all 31 test cases as of slice 2. |
 
 ## Entry 8 — Next AI Interaction
 

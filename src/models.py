@@ -8,3 +8,8 @@ class OrderCreate(BaseModel):
     restaurant_id: int = Field(gt=0) # Restaurant ID > 0 for a restaurant to exist.
     items: list[OrderItemCreate] = Field(min_length =1) # There has to be at least 1 item in an order.
     address: str = Field(min_length= 1) # Delivery address must be at least 1 character long.
+
+class GroupOrderCreate(BaseModel):
+    restaurant_id: int = Field(gt=0) # Restaurant ID > 0 for a restaurant to exist.
+    host_name: str = Field(min_length=1, max_length=100) # Host name must be between 1 and 100 characters long.
+    
