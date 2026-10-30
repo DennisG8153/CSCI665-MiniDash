@@ -156,3 +156,54 @@ The GROUP ORDERS feature will add three SQLite tables: group_orders, group_membe
 The diagram below illustrates how group orders, members, and their selected menu items connect to the existing MiniDash database. The diagram was created by me with refining from ChatGPT for a better understanding of the relationships and how they interact with one another.
 
 ![Mermaid Diagram (Created with Refinement from ChatGPT)](./screenshots/mermaid-diagram.png)
+
+## 7. Component Architecture Diagram
+
+```mermaid
+flowchart TD
+    A[Customer or Host] --> B[FastAPI Application]
+
+    B --> C[Group Order Routes]
+    C --> D[Group Order Service]
+
+    D --> E[Group Order Repository]
+    D --> F[Restaurant Repository]
+    D --> G[Normal Order Service]
+
+    E --> H[(SQLite Database)]
+    F --> H
+    G --> I[Normal Order Repository]
+    I --> H
+```
+## 8. Architecture Design  Record (ADR)
+### ADR-001: Separate Group Orders from Normal Orders
+**Status?** --> Accepted
+
+**Context:** Currently, MiniDash stores normal customer orders in the orders & order_items tables. This does not allow for Track B to be possible as the track requires group orders to support multiple members, individual item ownership, share codes, locking, inactivity expiration, and checkout. A database design is needed to help support these features without causing issues with the normal ordering system.
+
+**Options Considered:**
+Track A: Extend the existing orders table to allow customers to order now for delivery later. 
+- Reuses the existing orders structure.
+- Requires fewer additional tables.
+- Mixes unfinished orders with normal orders, potentially causing more confusion and errors.
+- Requires that customers be able to hold and release orders as desired before 30 minutes before delivery time. 
+- Time-dependent logic using an injected clock to manage order holding, releasing, and expiration.
+
+Track B: Creates separate tables for group orders and their associated items.
+- Uses group_orders, group_members, and group_order_items tables.
+- Keeps unfinished group orders separated from completed normal orders.
+- Supports member ownership and group-specific statuses. 
+- Requires additional tables and logic to manage interactions.
+
+**Decision:** Track B.
+**Rationale:** Separating tables provides cleaner boundaries between the normal orders and incomplete group orders. The group-specific functionalities can be implemented without causing interference with the normal order system. This approach also simplifies maintenance and future enhancements, as changes to group order logic will not inadvertently affect normal order processing. When the host completes the checkout, the group order is finalized and creates a normal MiniDash order.
+
+**Consequences:**
+**Positive:** 
+- Better separation of responsibilities between the ordering systems.
+- Easier to maintain group-specific logic.
+- Existing normal-order data remains separate.
+**Negative:**
+- Additional SQLite tables and logic are required.
+- Checkout MUST coordinate the group tables and the normal order tables to ensure data consistency.
+- More relationships have to be tested before deployment.

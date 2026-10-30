@@ -32,7 +32,7 @@
 | What I changed and why | I changed how the rules were worded as they did not fit the requirements before double-checking. |
 | Outcome | Requirements of appendix A were met. |
 
-## Entry 3 — Next AI Interaction
+## Entry 3 — Mermaid Design Diagram
 
 | Field | My Entry |
 |---|---|
@@ -45,18 +45,20 @@
 | What I changed and why | I edited the labeling of the keys as ChatGPT failed to do so. |
 | Outcome | The mermaid design diagram that exists in 'design.md'. |
 
-## Entry 4 — Next AI Interaction
+## Entry 4 — Architecture Design Record ADR
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 4 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 4 / October 30, 10:55 AM |
+| Tool, Model, Mode | GitHub Copilot & Low Eagerness |
+| Slice | Slice 3 |
+| Prompt | "Document the architecture design record for separating group orders from normal orders." |
+| What the AI produced | Screenshot Attached. |
+| What I verified | I verified the accuracy and completeness of Copilot's output against the listed requirements. |
+| What I changed and why | I had to go in and manually document the design records as GitHub Copilot failed to meet the requirements necessary for this project. |
+| Outcome | The current ADR documents the design, choices as to why, and explains why we are designing a database to support the group orders features without overly complicating the normal order system, as both can coexist. |
+**AI Output:**
+![GitHub Copilot Output SS #1](./docs/screenshots/Copilot1.png) 
 
 ## Entry 5 — Next AI Interaction
 
