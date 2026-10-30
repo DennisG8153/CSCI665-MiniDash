@@ -102,7 +102,7 @@
 | What I changed and why | The AI's generated test code required minor adjustments to work with the temporary databases and correctly execute and reference the materials. As this is in-line, it would attempt to auto-fill (rather aggressively) the surrounding context. |
 | Outcome | The test code now works correctly for all 31 test cases as of slice 2. |
 
-## Entry 8 — Next AI Interaction
+## Entry 8 — Slice 4: Adding/Removing Items & Authentication
 
 | Field | My Entry |
 |---|---|

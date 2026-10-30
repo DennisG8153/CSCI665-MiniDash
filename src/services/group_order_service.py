@@ -4,6 +4,8 @@ from fastapi import HTTPException
 from src.repository.restaurant_repository import restaurant_exists
 from src.services.group_order_utils import (generate_share_code, generate_member_credential, hash_credential)
 from src.repository.group_order_repository import (create_group_w_host, get_group_by_code, add_group_member, add_group_item, remove_group_item)
+from src.repository.group_order_repository import get_group_summary_data
+from src.services.group_order_utils import split_delivery_fee
 
 def create_group_order(restaurant_id: int, host_name: str):
     if not restaurant_exists(restaurant_id):
@@ -135,3 +137,41 @@ def remove_item_from_group(share_code: str, credential: str, item_id: int):
         if reason == "ITEM_NOT_FOUND":
             raise HTTPException(404, "Item not found")
         raise
+
+DELIVERY_FEE = 1595 #Price
+def get_group_order_summary(share_code: str):
+    data = get_group_summary_data(share_code)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Group not found")
+    group = data["group"]
+    members = data["members"]
+    member_ids = [member["member_id"] for member in members]
+    fee_shares = split_delivery_fee(DELIVERY_FEE, member_ids)
+    summary_members = []
+    for member in members:
+        member_id = member["member_id"]
+        subtotal = member["food_subtotal_cents"]
+        fee_share = fee_shares[member_id]
+
+        summary_members.append({
+            "member_id": member_id,
+            "name": member["name"],
+            "food_subtotal_cents": subtotal,
+            "delivery_fee_cents": fee_share,
+            "total_cents": subtotal + fee_share
+        })
+
+    food_subtotal = sum(
+        member["food_subtotal_cents"]
+        for member in summary_members
+    )
+
+    return {
+        "group_order_id": group["id"],
+        "share_code": group["share_code"],
+        "status": group["status"],
+        "delivery_fee_cents": DELIVERY_FEE,
+        "food_subtotal_cents": food_subtotal,
+        "grand_total_cents": food_subtotal + DELIVERY_FEE,
+        "members": summary_members
+    }

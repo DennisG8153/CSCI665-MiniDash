@@ -232,3 +232,41 @@ def remove_group_item(share_code, credential_hash, item_id, updated_at):
         raise
     finally:
         connection.close()
+
+def get_group_summary_data(share_code):
+    connection = get_connection()
+    try:
+        group = connection.execute(
+            "SELECT * FROM group_orders WHERE share_code = ?",
+            (share_code,)
+        ).fetchone()
+        if group is None:
+            return None
+        members = connection.execute(
+            """
+            SELECT
+                gm.id AS member_id,
+                gm.name AS name,
+                COALESCE(
+                    SUM(goi.quantity * mi.price_cents), 0
+                ) AS food_subtotal_cents
+            FROM group_members AS gm
+            LEFT JOIN group_order_items AS goi
+                ON goi.member_id = gm.id
+                AND goi.group_order_id = gm.group_order_id
+            LEFT JOIN menu_items AS mi
+                ON mi.id = goi.menu_item_id
+            WHERE gm.group_order_id = ?
+            GROUP BY gm.id, gm.name
+            ORDER BY gm.id
+            """,
+            (group["id"],)
+        ).fetchall() # The SQLite function mutiplies each item's quantity by it's price then uses Sum() to calculate the member's subtotal. Left Join is important as it includes people who HAVEN'T ordered anything with COALESE(..., 0) gives those members a total of 0.
+
+        return {
+            "group": dict(group),
+            "members": [dict(member) for member in members]
+        }
+
+    finally:
+        connection.close()
