@@ -13,19 +13,22 @@ rounding (the parts must add up to the whole).
 3) As the host, I want to be able to control when my party can add more items and be able to "lock" the party in case I don't want to order more.
 
 #### Criteria
-1) When the host creates a group order for a valid restaurant, the system shall create the group order and return a unique share code for the host to share with their members.
-2) If the restaurant doesn't exist, the system will reject the order request with a 404 error.
-3) Whenever a member enters a valid code for an active and unplaced order, the system will add that person to the group, so long as the group is unlocked still.
-4) If the host checks out, the group order becomes a normal MiniDash order.
-5) If a person enters a code that doesn't exist, is wrong, has expired, or is out of date because the order has been accepted, the system shall reject the person with an error.
-6) If a group order already has ten members, the system will reject any new requests to join automatically.
-7) If a group order has two or more hours of inactivity, the order will expire and the host will have to start a new group order. 
-8) If a group order is locked by the host, the system will reject the request without changing who already exists in the group.
-9) The summary of the total order will be split based on what each member of the group ordered.
-10) The delivery fees of the order will be split evenly among all participants with correct rounding.
-11) When a member adds a valid menu item to an active and unlocked group order, the system shall add that item to the group order. 
-13) When a member removes a valid menu item to an active and unlocked group order, the system will remove the item from the group order.
-14) Only the host should be able to lock the order and check out.
+1) WHEN the HOST CREATES a group order for a valid restaurant, THE SYSTEM SHALL create the group order and return a unique share code for the host to share with their members.
+2) IF the restaurant DOESN'T EXIST, THE SYSTEM SHALL reject the order request with a 404 error.
+3) WHENEVER A MEMBER enters a valid code for an active and unplaced order, THE SYSTEM SHALL add that person to the group, so long as the group is unlocked still.
+4) WHEN the host checks out a locked group order, THE SYSTEM SHALL create one normal MiniDash order containing all the member's items and prevent the group order from being checked out again.
+5) IF A PERSON enters a code that doesn't exist, is wrong, has expired, or is out of date because the order has been accepted, THE SYSTEM SHALL reject the person with an error.
+6) IF A GROUP order already has ten members, THE SYSTEM SHALL reject any new requests to join automatically.
+7) IF A GROUP order has two or more hours of inactivity, THE SYSTEM SHALL make the order expire and the host will have to start a new group order. 
+8) IF a successful group activity happens by the members, THE SYSTEM SHALL reset the inactivity timer.
+9) WHEN the host locks an active group order, THE SYSTEM SHALL prevent members from joining, adding items, or removing items.
+10) WHEN an order is placed, THE SYSTEM SHALL display each member's subtotal based on the items they selected.
+11) WHEN an order is placed, THE SYSTEM SHALL divide the delivery fee among all member's using integer cents evenly with correct rounding.
+12) WHEN a member adds a valid menu item to an active and unlocked group order, THE SYSTEM SHALL add that item to the group order. 
+13) WHEN a member removes a valid menu item to an active and unlocked group order, THE SYSTEM SHALL remove the item from the group order.
+14) WHEN a member attempts to modify another member's items, THE SYSTEM SHALL reject the request without changing the group order.
+15) WHEN a member other than the host attempts to lock a group order, THE SYSTEM SHALL reject the request without changing the group's status.
+16) WHEN any member attempts to add or remove items after the group order is locked, THE SYSTEM SHALL reject the request without modifying the order.
 
 #### Out of Scope:
 1) Both TRACK A and TRACK C are not requirements for this project.
