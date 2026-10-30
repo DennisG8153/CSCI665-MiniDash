@@ -8,9 +8,9 @@ rounding (the parts must add up to the whole).
 - When the host checks out, the group order becomes a normal MiniDash order.
 
 ### User Stories:
-As the host, I want to create group orders for a restaurant so that I can invite my other friends to all order food together.
-As the other members of the group, I want to be able to join an existing group order using a code, so I can add my order to the shared order. (I.E, Stacy has a group but Sharon wants to join. Stacy can give Sharon a code to join.)
-As the host, I want to be able to control when my party can add more items and be able to "lock" the party in case I don't want to order more.
+1) As the host, I want to create group orders for a restaurant so that I can invite my other friends to all order food together.
+2) As the other members of the group, I want to be able to join an existing group order using a code, so I can add my order to the shared order. (I.E, Stacy has a group but Sharon wants to join. Stacy can give Sharon a code to join.)
+3) As the host, I want to be able to control when my party can add more items and be able to "lock" the party in case I don't want to order more.
 
 #### Criteria
 1) When the host creates a group order for a valid restaurant, the system shall create the group order and return a unique share code for the host to share with their members.
