@@ -106,11 +106,11 @@
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 8 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 8 / October 30 3:30 PM |
+| Tool, Model, Mode | GitHub CoPilot Inline |
+| Slice | 4.1 |
+| Prompt | Help finish testing for adding items to group orders. |
+| What the AI produced | The AI produced mostly correct programs to conduct testing. |
+| What I verified | Outputs, if the tests passed. |
+| What I changed and why | Some of the inline suggestions had the wrong variables and were not correct when trying to do the SQLite commands to access. Those had to be changed for the testing to work. |
+| Outcome | All tests pass and are operational. |
