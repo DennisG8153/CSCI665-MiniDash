@@ -167,3 +167,68 @@ def add_group_item(share_code, credential_hash, menu_item_id, quantity, updated_
     finally:
         connection.close()
 
+def remove_group_item(share_code, credential_hash, item_id, updated_at):
+    connection = get_connection()
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        group = connection.execute(
+            "SELECT * FROM group_orders WHERE share_code = ?",
+            (share_code,)
+        ).fetchone()
+        if group is None:
+            raise ValueError("GROUP_NOT_FOUND")
+        if group["status"] != "OPEN":
+            raise ValueError("GROUP_NOT_OPEN")
+        current_time = datetime.fromisoformat(updated_at)
+        last_activity = datetime.fromisoformat(group["last_activity_at"])
+        if current_time >= last_activity + timedelta(hours=2):
+            connection.execute(
+                "UPDATE group_orders SET status = 'EXPIRED' WHERE id = ?",
+                (group["id"],)
+            )
+            connection.commit()
+            raise ValueError("GROUP_EXPIRED")
+        # Authenticate the person making the request.
+        member = connection.execute(
+            """
+            SELECT id
+            FROM group_members
+            WHERE group_order_id = ? AND credential_hash = ?
+            """,
+            (group["id"], credential_hash)
+        ).fetchone()
+        if member is None:
+            raise ValueError("INVALID_CREDENTIAL")
+        # Only find items belonging to this member and group.
+        item = connection.execute(
+            """
+            SELECT id
+            FROM group_order_items
+            WHERE id = ? AND group_order_id = ? AND member_id = ?
+            """,
+            (item_id, group["id"], member["id"])
+        ).fetchone()
+        if item is None:
+            raise ValueError("ITEM_NOT_FOUND")
+        connection.execute(
+            "DELETE FROM group_order_items WHERE id = ?",
+            (item_id,)
+        )
+        connection.execute(
+            """
+            UPDATE group_orders
+            SET last_activity_at = ?
+            WHERE id = ?
+            """,
+            (updated_at, group["id"])
+        )
+        connection.commit()
+        return {
+            "message": "Item removed successfully",
+            "item_id": item_id
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()

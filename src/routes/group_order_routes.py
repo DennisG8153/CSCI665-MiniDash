@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Header
 from src.models import GroupOrderCreate,GroupJoinRequest, GroupItemAdd
-from src.services.group_order_service import create_group_order, join_group_order, add_item_to_group
+from src.services.group_order_service import create_group_order, join_group_order, add_item_to_group, remove_item_from_group
 router = APIRouter()
 @router.post("/group-orders", status_code=status.HTTP_201_CREATED)
 def create_group(request: GroupOrderCreate):
@@ -21,4 +21,12 @@ def add_item(share_code: str, request: GroupItemAdd, member_credential: str = He
         credential=member_credential,
         menu_item_id=request.menu_item_id,
         quantity=request.quantity
+    )
+
+@router.delete("/group-orders/{share_code}/items/{item_id}")
+def delete_item(share_code: str, item_id: int, member_credential: str = Header(alias = "X-Member-Credential")):
+    return remove_item_from_group(
+        share_code=share_code,
+        credential=member_credential,
+        item_id=item_id
     )
