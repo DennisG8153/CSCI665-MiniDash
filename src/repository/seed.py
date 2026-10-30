@@ -1,4 +1,4 @@
-from src.repository.database import get_connection # Importing function to create database tables.
+from src.repository.database import get_connection # Importing database connection function.
 
 def seed_restaurants():
     connection = get_connection() # Getting connection to the database.
@@ -54,4 +54,7 @@ def seed_menu_items():
             print("Menu items already exist, skipping process.")
     finally:
         connection.close()
-    
+
+if __name__ == "__main__": # This ensures restaurants are inserted before menu items. LIMITATION: This assumes restaurants have IDs 1-5. This is fine for a new database and a small project like this, but bad practice in the workforce.
+    seed_restaurants()
+    seed_menu_items()
