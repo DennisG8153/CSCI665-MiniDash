@@ -15,4 +15,7 @@ class GroupOrderCreate(BaseModel):
 
 class GroupJoinRequest(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    
+
+class GroupItemAdd(BaseModel): #Prevents negative IDs and quantities of 0 or less. 
+    menu_item_id: int= Field(gt=0)
+    quantity: int = Field(gt=0)

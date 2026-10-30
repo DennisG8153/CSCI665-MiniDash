@@ -83,3 +83,87 @@ def add_group_member(group_id, name, credential_hash, joined_at):
         raise
     finally:
         connection.close()
+
+def add_group_item(share_code, credential_hash, menu_item_id, quantity, updated_at):
+    connection = get_connection()
+    try:
+        connection.execute("BEGIN IMMEDIATE") # Used to make sure the group does not become locked or expire between our validation checks and inserting.
+        group = connection.execute( #Locate group with share code
+            "SELECT * FROM group_orders WHERE share_code = ?", (share_code,)
+        ).fetchone()
+        if group is None:
+            raise ValueError("GROUP_NOT_FOUND")
+        if group['status'] != "OPEN": #Reject inactive groups and expire idle open ones
+            raise ValueError("GROUP_NOT_OPEN")
+        current_time = datetime.fromisoformat(updated_at)
+        last_activity_at = datetime.fromisoformat(group["last_activity_at"])
+        if current_time >= last_activity_at + timedelta(hours=2): # If more than 2 hours have passed since the last activity...
+            connection.execute(
+                "UPDATE group_orders SET status = 'EXPIRED' WHERE id = ?", (group["id"],)
+            )
+            connection.commit()
+            raise ValueError("GROUP_EXPIRED")
+         # Authenticate the participant using the credential hash.
+        member = connection.execute(
+            """
+            SELECT id
+            FROM group_members
+            WHERE group_order_id = ? AND credential_hash = ?
+            """,
+            (group["id"], credential_hash)
+        ).fetchone()
+
+        if member is None:
+            raise ValueError("INVALID_CREDENTIAL")
+
+        # Check that the item belongs to this restaurant.
+        menu_item = connection.execute(
+            """
+            SELECT id
+            FROM menu_items
+            WHERE id = ? AND restaurant_id = ?
+            """,
+            (menu_item_id, group["restaurant_id"])
+        ).fetchone()
+
+        if menu_item is None:
+            raise ValueError("INVALID_MENU_ITEM")
+
+        # Add an item owned by the authenticated member.
+        cursor = connection.execute(
+            """
+            INSERT INTO group_order_items
+            (group_order_id, member_id, menu_item_id, quantity)
+            VALUES (?, ?, ?, ?)
+            """,
+            (group["id"], member["id"], menu_item_id, quantity)
+        )
+
+        item_id = cursor.lastrowid
+
+        connection.execute(
+            """
+            UPDATE group_orders
+            SET last_activity_at = ?
+            WHERE id = ?
+            """,
+            (updated_at, group["id"])
+        )
+
+        connection.commit()
+
+        return {
+            "item_id": item_id,
+            "group_order_id": group["id"],
+            "member_id": member["id"],
+            "menu_item_id": menu_item_id,
+            "quantity": quantity
+        }
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
+

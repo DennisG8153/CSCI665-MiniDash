@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from src.repository.restaurant_repository import restaurant_exists
 from src.services.group_order_utils import (generate_share_code, generate_member_credential, hash_credential)
-from src.repository.group_order_repository import (create_group_w_host, get_group_by_code, add_group_member)
+from src.repository.group_order_repository import (create_group_w_host, get_group_by_code, add_group_member, add_group_item)
 
 def create_group_order(restaurant_id: int, host_name: str):
     if not restaurant_exists(restaurant_id):
@@ -82,3 +82,30 @@ def join_group_order(share_code: str, name: str):
             )
         else:
             raise
+
+def add_item_to_group(share_code: str, credential: str, menu_item_id: int, quantity: int):
+    if not credential:
+        raise HTTPException(status_code=401, detail="Member credential required")
+    credential_hash = hash_credential(credential)
+    updated_at = datetime.now(timezone.utc).isoformat()
+    try: 
+        return add_group_item(
+            share_code=share_code,
+            credential_hash=credential_hash,
+            menu_item_id=menu_item_id,
+            quantity=quantity,
+            updated_at=updated_at
+        )
+    except ValueError as error:
+        reason = str(error)
+        if reason == "GROUP_NOT_FOUND":
+            raise HTTPException(404, "Group not found")
+        if reason == "GROUP_EXPIRED":
+            raise HTTPException(410, "Group has expired")
+        if reason == "GROUP_NOT_OPEN":
+            raise HTTPException(409, "Group is not open")
+        if reason == "INVALID_CREDENTIAL":
+            raise HTTPException(401, "Invalid member credential")
+        if reason == "INVALID_MENU_ITEM":
+            raise HTTPException(422,"Menu item does not belong to this restaurant")
+        raise
