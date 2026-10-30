@@ -60,18 +60,21 @@
 **AI Output:**
 ![GitHub Copilot Output SS #1](./docs/screenshots/Copilot1.png) 
 
-## Entry 5 — Next AI Interaction
+## Entry 5 — SQL Table Creation
 
 | Field | My Entry |
 |---|---|
-| Entry # / Date | 5 / ... |
-| Tool, Model, Mode | ... |
-| Slice | ... |
-| Prompt | ... |
-| What the AI produced | ... |
-| What I verified | ... |
-| What I changed and why | ... |
-| Outcome | ... |
+| Entry # / Date | 5 / October 30, 12:00 PM |
+| Tool, Model, Mode | GitHub Copilot & Low Eagerness |
+| Slice | 1 from tasks.md |
+| Prompt | Inline SQL table creation for the database schema, testing CHECK table-level constraints. |
+| What the AI produced | "is_host INTEGER NOT NULL DEFAULT 0, CHECK (is_host IN (0,1)), credential_hash TEXT NOT NULL," |
+| What I verified | I verified the correctness of the table creations with the python command `python -c "from src.repository.schema import create_tables; create_tables(); print('Database initialized successfully!')"` |
+| What I changed and why | I had to change the formatting of the CHECK constraint to be inline with the is_host column definition as required by SQLite syntax so the table creation would not have a near "credential_hash" error. |
+| Outcome | The table creation now succeeds without any errors. |
+
+**Terminal Output from Table Creation Command:**
+![VSCode Terminal Output SS #1](./docs/screenshots/TerminalOutput1.png) 
 
 ## Entry 6 — Next AI Interaction
 
